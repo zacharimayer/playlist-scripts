@@ -1,0 +1,31 @@
+import csv
+from getpass import getpass
+from pyapplemusic import AppleMusic
+
+# Get Apple Music credentials from user input
+key_id = input("Enter your Apple Music Key ID: ")
+team_id = input("Enter your Apple Music Team ID: ")
+auth_key_path = input("Enter the path to your Apple Music Auth Key file: ")
+auth_key_secret = getpass("Enter your Apple Music Auth Key secret: ")
+
+# Create AppleMusic object with user credentials
+apple_music = AppleMusic(key_id, team_id, auth_key_path, auth_key_secret)
+
+# Set playlist name and add songs from CSV file
+playlist_name = "My Playlist"
+with open("songs.csv") as csvfile:
+    reader = csv.reader(csvfile)
+    song_ids = []
+    for row in reader:
+        song_title, artist_name = row
+        search_results = apple_music.search(song_title, artist_name, types=["songs"])
+        if search_results:
+            # Add first result to playlist
+            song_id = search_results[0]["id"]
+            song_ids.append(song_id)
+
+# Create new playlist with the specified name and song IDs
+playlist_id = apple_music.create_playlist(playlist_name)
+apple_music.add_tracks_to_playlist(playlist_id, song_ids)
+
+print(f"Playlist '{playlist_name}' created with {len(song_ids)} songs!")
